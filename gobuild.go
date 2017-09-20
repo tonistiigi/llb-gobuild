@@ -8,8 +8,16 @@ import (
 	"github.com/moby/buildkit/client/llb/llbbuild"
 )
 
-func New() *GoBuilder {
-	return &GoBuilder{}
+type Opt struct {
+	DevMode bool
+}
+
+func New(opt *Opt) *GoBuilder {
+	devMode := false
+	if opt != nil && opt.DevMode {
+		devMode = true
+	}
+	return &GoBuilder{DevMode: devMode}
 }
 
 type BuildOpt struct {
@@ -36,6 +44,7 @@ type BuildOptJSON struct {
 }
 
 type GoBuilder struct {
+	DevMode bool
 }
 
 func (gb *GoBuilder) BuildExe(opt BuildOpt) (*llb.State, error) {
@@ -69,7 +78,12 @@ func (gb *GoBuilder) BuildExe(opt BuildOpt) (*llb.State, error) {
 		return nil, err
 	}
 
-	run := gobuildDev().Run(llb.Shlex("gobuild --target=/out/buildkit.llb.definition"), llb.AddEnv("GOOPT", string(dt)))
+	goBuild := llb.Image("docker.io/tonistiigi/llb-gobuild:latest@sha256:d4c09c9a1a558609095e5dba117c264050181676c8a918bf94e5b603e934ab51")
+	if gb.DevMode {
+		goBuild = gobuildDev()
+	}
+
+	run := goBuild.Run(llb.Shlexf("gobuild %s", opt.Pkg), llb.AddEnv("GOOPT", string(dt)))
 	run.AddMount(opt.MountPath, opt.Source, llb.Readonly)
 	out := run.AddMount("/out", llb.Scratch()).With(llbbuild.Build())
 	return &out, nil

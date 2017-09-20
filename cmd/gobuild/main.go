@@ -21,7 +21,7 @@ type opt struct {
 
 func main() {
 	var o opt
-	flag.StringVar(&o.target, "target", "", "target file")
+	flag.StringVar(&o.target, "target", "/out/buildkit.llb.definition", "target file")
 	flag.Parse()
 
 	out := os.Stdout
