@@ -89,7 +89,7 @@ func generateLLB(opt gobuild.BuildOptJSON, out io.Writer) error {
 		return err
 	}
 
-	def = append(def, dt...)
+	def.Def = append(def.Def, dt.Def...)
 
 	// loadLLB(def)
 
@@ -138,8 +138,8 @@ type emptyVertex struct{}
 func (v *emptyVertex) Validate() error {
 	return nil
 }
-func (v *emptyVertex) Marshal() ([]byte, error) {
-	return nil, nil
+func (v *emptyVertex) Marshal() ([]byte, *pb.OpMetadata, error) {
+	return nil, nil, nil
 }
 func (v *emptyVertex) Output() llb.Output {
 	return nil

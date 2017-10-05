@@ -78,7 +78,7 @@ func (gb *GoBuilder) BuildExe(opt BuildOpt) (*llb.State, error) {
 		return nil, err
 	}
 
-	goBuild := llb.Image("docker.io/tonistiigi/llb-gobuild:latest@sha256:c11e028d9219bb7437589b1cc1c0939f41717e9e039e79eb7af931d5403d3921")
+	goBuild := llb.Image("docker.io/tonistiigi/llb-gobuild:latest@sha256:43da63157126f4156ddb8cef91c40b6a0de66d477fd3c413d28bc3c5141886bf")
 	if gb.DevMode {
 		goBuild = gobuildDev()
 	}
