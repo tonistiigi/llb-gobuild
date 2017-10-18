@@ -87,6 +87,11 @@ func (l *Loader) loadDir(dir string) (*pkg, error) {
 	}
 	l.v.add(dir)
 
+	vendorIndex := strings.Index(p.ImportPath, "/vendor/")
+	if vendorIndex != -1 {
+		p.ImportPath = p.ImportPath[vendorIndex+8:]
+	}
+
 	pkg := &pkg{p: p, alldeps: map[string]llb.State{}, cgo: len(p.CgoFiles) > 0}
 
 	for _, imp := range p.Imports {
