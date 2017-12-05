@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.8-alpine AS builder
+FROM docker.io/library/golang:1.9-alpine AS builder
 WORKDIR /go/src/github.com/tonistiigi/llb-gobuild
 RUN apk add --no-cache git
 COPY . .

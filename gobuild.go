@@ -78,7 +78,7 @@ func (gb *GoBuilder) BuildExe(opt BuildOpt) (*llb.State, error) {
 		return nil, err
 	}
 
-	goBuild := llb.Image("docker.io/tonistiigi/llb-gobuild:latest@sha256:43da63157126f4156ddb8cef91c40b6a0de66d477fd3c413d28bc3c5141886bf")
+	goBuild := llb.Image("docker.io/tonistiigi/llb-gobuild@sha256:c97016d4a19b9b9888ac6104800f894ca58bff52aa0810f89b3c0bf269633853")
 	if gb.DevMode {
 		goBuild = gobuildDev()
 	}
@@ -106,7 +106,7 @@ func gobuildDev() llb.State {
 }
 
 func goBuildBase() llb.State {
-	goAlpine := llb.Image("docker.io/library/golang:1.8-alpine@sha256:2287e0e274c1d2e9076c1f81d04f1a63c86b73c73603b09caada5da307a8f86d")
+	goAlpine := llb.Image("docker.io/library/golang:1.9-alpine@sha256:354be5853ea170e6f8bf3e258154e10ba0ed03f909d8be8625faf61592c515c8")
 	return goAlpine.
 		AddEnv("CGO_ENABLED", "0").
 		AddEnv("GOPATH", "/go").

@@ -32,7 +32,7 @@ func New(opt GoOpt) *Loader {
 		Compiler:    "gc",
 		CgoEnabled:  opt.CgoEnabled,
 		BuildTags:   opt.BuildTags,
-		ReleaseTags: []string{"go1.1", "go1.2", "go1.3", "go1.4", "go1.5", "go1.6", "go1.7", "go1.8"},
+		ReleaseTags: []string{"go1.1", "go1.2", "go1.3", "go1.4", "go1.5", "go1.6", "go1.7", "go1.8", "go1.9"},
 	}
 
 	return &Loader{
@@ -331,7 +331,7 @@ func (v *vendorDirs) add(d string) {
 }
 
 func goBuildBase() llb.State {
-	goAlpine := llb.Image("docker.io/library/golang:1.8-alpine@sha256:2287e0e274c1d2e9076c1f81d04f1a63c86b73c73603b09caada5da307a8f86d")
+	goAlpine := llb.Image("docker.io/library/golang:1.9-alpine@sha256:354be5853ea170e6f8bf3e258154e10ba0ed03f909d8be8625faf61592c515c8")
 	return goAlpine.
 		AddEnv("CGO_ENABLED", "0").
 		AddEnv("PATH", "/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"). //.
