@@ -6,6 +6,8 @@ import (
 
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/client/llb/llbbuild"
+	"github.com/moby/buildkit/solver/pb"
+	"github.com/pkg/errors"
 )
 
 type Opt struct {
@@ -48,11 +50,6 @@ type GoBuilder struct {
 }
 
 func (gb *GoBuilder) BuildExe(opt BuildOpt) (*llb.State, error) {
-	inp, err := opt.Source.Output().ToInput()
-	if err != nil {
-		return nil, err
-	}
-
 	def, err := opt.Source.Marshal()
 	if err != nil {
 		return nil, err
@@ -62,10 +59,17 @@ func (gb *GoBuilder) BuildExe(opt BuildOpt) (*llb.State, error) {
 	if err := llb.WriteTo(def, buf); err != nil {
 		return nil, err
 	}
+	var op pb.Op
+	if err := (&op).Unmarshal(def.Def[len(def.Def)-1]); err != nil {
+		return nil, errors.Wrap(err, "failed to parse llb proto op")
+	}
+	if len(op.Inputs) == 0 {
+		return nil, errors.Errorf("invalid source state")
+	}
 
 	dt, err := json.Marshal(BuildOptJSON{
-		Source:      inp.Digest.String(),
-		SourceIndex: int(inp.Index),
+		Source:      op.Inputs[0].Digest.String(),
+		SourceIndex: int(op.Inputs[0].Index),
 		SourceDef:   buf.Bytes(),
 		MountPath:   opt.MountPath,
 		Pkg:         opt.Pkg,
@@ -78,7 +82,7 @@ func (gb *GoBuilder) BuildExe(opt BuildOpt) (*llb.State, error) {
 		return nil, err
 	}
 
-	goBuild := llb.Image("docker.io/tonistiigi/llb-gobuild@sha256:c97016d4a19b9b9888ac6104800f894ca58bff52aa0810f89b3c0bf269633853")
+	goBuild := llb.Image("docker.io/tonistiigi/llb-gobuild@sha256:511744f1570cfc9c88e67fb88181986f19841c6880aafa6fe8d5a3f6e7144f61")
 	if gb.DevMode {
 		goBuild = gobuildDev()
 	}
@@ -93,11 +97,11 @@ func gobuildDev() llb.State {
 	gobDev := llb.Local("gobuild-dev")
 	build := goBuildBase().
 		Run(llb.Shlex("apk add --no-cache git")).
-		Dir("/go/src/github.com/tonistiigi/llb-gobuild").
-		Run(llb.Shlex("sh -c \"go get -d github.com/moby/buildkit/client/llb && rm -rf /go/src/github.com/moby/buildkit/vendor/github.com/opencontainers/go-digest && go get -d github.com/opencontainers/go-digest\"")).
-		Run(llb.Shlex("go build -o /out/gobuild github.com/tonistiigi/llb-gobuild/cmd/gobuild"))
+		Dir("/src").
+		Run(llb.Shlex("go build -o /out/gobuild ./cmd/gobuild"))
 
-	build.AddMount("/go/src/github.com/tonistiigi/llb-gobuild", gobDev, llb.Readonly)
+	build.AddMount("/src", gobDev, llb.Readonly)
+	build.AddMount("/go/pkg/mod", llb.Scratch(), llb.AsPersistentCacheDir("gocache", llb.CacheMountShared))
 
 	out := build.AddMount("/out", llb.Scratch())
 
@@ -106,7 +110,7 @@ func gobuildDev() llb.State {
 }
 
 func goBuildBase() llb.State {
-	goAlpine := llb.Image("docker.io/library/golang:1.9-alpine@sha256:354be5853ea170e6f8bf3e258154e10ba0ed03f909d8be8625faf61592c515c8")
+	goAlpine := llb.Image("docker.io/library/golang:1.11-alpine@sha256:31389db6001c5222bef9817a04ae8c8401ae8bed6fb965aac17b0e742f4c3e5e")
 	return goAlpine.
 		AddEnv("CGO_ENABLED", "0").
 		AddEnv("GOPATH", "/go").

@@ -125,7 +125,7 @@ type output struct {
 	index int
 }
 
-func (o *output) ToInput() (*pb.Input, error) {
+func (o *output) ToInput(*llb.Constraints) (*pb.Input, error) {
 	return &pb.Input{Digest: digest.Digest(o.dgst), Index: pb.OutputIndex(o.index)}, nil
 }
 
@@ -138,8 +138,8 @@ type emptyVertex struct{}
 func (v *emptyVertex) Validate() error {
 	return nil
 }
-func (v *emptyVertex) Marshal() ([]byte, *pb.OpMetadata, error) {
-	return nil, nil, nil
+func (v *emptyVertex) Marshal(*llb.Constraints) (digest.Digest, []byte, *pb.OpMetadata, error) {
+	return "", nil, nil, nil
 }
 func (v *emptyVertex) Output() llb.Output {
 	return nil

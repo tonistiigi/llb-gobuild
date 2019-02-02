@@ -239,6 +239,9 @@ func (l *Loader) loadDir(dir string) (*pkg, error) {
 		for _, f := range p.SFiles {
 			st.AddMount(path.Join("/root", f), l.local, llb.SourcePath(strings.TrimPrefix(path.Join(dir, f), l.wd)), llb.Readonly)
 		}
+		for _, f := range p.HFiles {
+			st.AddMount(path.Join("/root", f), l.local, llb.SourcePath(strings.TrimPrefix(path.Join(dir, f), l.wd)), llb.Readonly)
+		}
 		st.AddMount(path.Join("/work", p.ImportPath, "_obj/go_asm.h"), asmheader, llb.SourcePath("go_asm.h"), llb.Readonly)
 		asmp := st.AddMount(path.Join("/work", p.ImportPath, "_obj"), llb.Scratch())
 
@@ -331,7 +334,7 @@ func (v *vendorDirs) add(d string) {
 }
 
 func goBuildBase() llb.State {
-	goAlpine := llb.Image("docker.io/library/golang:1.9-alpine@sha256:354be5853ea170e6f8bf3e258154e10ba0ed03f909d8be8625faf61592c515c8")
+	goAlpine := llb.Image("docker.io/library/golang:1.11-alpine")
 	return goAlpine.
 		AddEnv("CGO_ENABLED", "0").
 		AddEnv("PATH", "/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"). //.
